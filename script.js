@@ -13,6 +13,10 @@ const Player = (name, mark) => {
     }
 };
 
+const AI = () => {
+    
+};
+
 const Board = ()=>{
     let _gameboard = ['','','','','','','','',''];
     let _nodes = [];
@@ -32,6 +36,10 @@ const Board = ()=>{
         _nodes[pos].innerText = mark;
         _gameboard[pos] = mark;
     };
+
+    const checkTie = () => {
+        return _gameboard.every(pos => pos === 'X' || pos === 'O')
+    }
 
     const checkWin = () => {
         const matchPos = [ [0,1,2], [3,4,5], [6,7,8], 
@@ -55,7 +63,8 @@ const Board = ()=>{
         getBoard,
         setNodes,
         setMark,
-        checkWin
+        checkWin,
+        checkTie
     };
 };
 
@@ -113,7 +122,7 @@ const Game = (()=>{
         const area = document.querySelector('.get-names-area');
         area.style.display = 'none';
 
-        // document.querySelector('.one-player-button').addEventListener('click', );
+        document.querySelector('.one-player-button').addEventListener('click', _startOnePlayerGame);
         document.querySelector('.two-player-button').addEventListener('click', ()=>{
             if(area.style.display === 'none') {
                 area.style.display = 'flex';
@@ -142,7 +151,13 @@ const Game = (()=>{
     };
 
     const _startOnePlayerGame = () => {
+        _playing = true;
 
+        _player1 = Player('Human', 'X');
+        _player2 = Player('Computer', 'O');
+
+        _setBoard();
+        document.getElementById('board').addEventListener('click', _handleBoardClick);
     };
 
     const _startTwoPlayerGame = (player1Name, player2Name) => {
@@ -151,25 +166,28 @@ const Game = (()=>{
         _player1 = Player(player1Name, 'X');
         _player2 = Player(player2Name, 'O');
 
+        _setBoard();
+        document.getElementById('board').addEventListener('click', _handleBoardClick);
+    };
+
+    const _setBoard = () => {
         _board = Board();
-        _createGameArea(player1Name, player2Name);
+        _createGameArea();
         _renderBoard();
 
         _currentPlayer = [_player1,_player2][Math.floor(Math.random() * 2)];
         _setCurrentPlayer();
         _board.setNodes();
-
-        document.getElementById('board').addEventListener('click', _handleBoardClick)
     };
 
-    const _createGameArea = (p1Name, p2Name) => {
+    const _createGameArea = () => {
         const text = `
           <div class="game-area">
             <div class="instructions">Instructions</div>
             <div id="board"></div>
             <div class="turn-indicator-area">
-              <div class="turn-indicator p1-turn-indicator">${p1Name}</div>
-              <div class="turn-indicator p2-turn-indicator">${p2Name}</div>
+              <div class="turn-indicator p1-turn-indicator">${_player1.getName()}</div>
+              <div class="turn-indicator p2-turn-indicator">${_player2.getName()}</div>
             </div>
           </div>
           <div class="restart-button-wrapper">
@@ -226,9 +244,14 @@ const Game = (()=>{
         const mark = _currentPlayer.getMark();
 
         _board.setMark(pos, mark);
-        const win = _board.checkWin();
 
-        if(win) {
+        const win = _board.checkWin();
+ 
+        if(!win && _board.checkTie()) {
+            _playing = false;
+            DisplayController.renderInstructions('It\'s a tie...');
+            _restartCountdown(3000);
+        } else if(win) {
             _playing = false;
             for(const pos of win) {
                 document.getElementById(`s${pos}`).classList.add('winning-square');
@@ -243,8 +266,6 @@ const Game = (()=>{
             }
             _setCurrentPlayer();
         }
-
-     
     };
 
     const _restartCountdown = (ms) => {
