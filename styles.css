@@ -6,4 +6,60 @@
 
 body {
     background-color: #333;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+}
+
+.wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+header h1 {
+    text-align: center;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: #bbf;
+    margin: 15px 0;
+    font-size: 40px;
+}
+
+.player-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    margin: 15px auto;
+    width: 175px;
+    height: 50px;
+    border-radius: 30px;
+}
+
+.player-button:hover {
+    background-color: #aaa;
+    cursor: pointer;
+}
+
+.get-names-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 150px;
+    margin: -10px auto;
+    padding: 10px;
+    background-color: #ccc;
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+.get-names-area input {
+    padding: 5px;
+}
+
+.get-names-area button {
+    width: 100px;
+    height: 30px;
+    margin: 0 auto;
+    background-color: #5a5;
+    color: white;
 }
