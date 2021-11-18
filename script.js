@@ -15,8 +15,47 @@ const Player = (name, mark) => {
 
 const Board = ()=>{
     let _gameboard = ['','','','','','','','',''];
-    return {
+    let _nodes = [];
 
+    const getBoard = () => {
+        return _gameboard;
+    };
+
+    const setNodes = () => {
+        for(let i = 0; i < 9; i++) {
+            let node = document.getElementById(`s${i}`);
+            _nodes.push(node);
+        }
+    };
+
+    const setMark = (pos, mark) => {
+        _nodes[pos].innerText = mark;
+        _gameboard[pos] = mark;
+    };
+
+    const checkWin = () => {
+        const matchPos = [ [0,1,2], [3,4,5], [6,7,8], 
+                            [0,3,6], [1,4,7], [2,5,8], 
+                            [0,4,8], [2,4,6] ];
+        for (const pos of matchPos) {
+            if(_checkMatch(pos)) {
+                return pos;
+            }
+        }
+        return false;
+    };
+
+    _checkMatch = (arr) => {
+        if(!_gameboard[arr[0]]) return false;
+
+        if(_gameboard[arr[0]] === _gameboard[arr[1]] && _gameboard[arr[1]] === _gameboard[arr[2]]) return true;
+    };
+
+    return {
+        getBoard,
+        setNodes,
+        setMark,
+        checkWin
     };
 };
 
@@ -27,12 +66,29 @@ const DisplayController = (() => {
         _display.innerHTML = str;
     };
 
+    const renderById = (str, id) => {
+        document.getElementById(id).innerHTML = str;
+    };
+
+    const renderInstructions = (text) => {
+        document.querySelector('.instructions').innerText = text;
+    };
+
     return {
-        render
+        render,
+        renderById,
+        renderInstructions
     };
 })();
 
 const Game = (()=>{
+    let _board;
+    let _currentPlayer;
+    let _player1;
+    let _player2;
+
+    let _playing = false;
+
     const _createMainMenu = () => {
         const text = `
         <div class="player-selection">
@@ -90,18 +146,104 @@ const Game = (()=>{
     };
 
     const _startTwoPlayerGame = (player1Name, player2Name) => {
-        const player1 = Player(player1Name, 'X');
-        const player2 = Player(player2Name, 'O');
+        _playing = true;
 
-        const board = Board();
+        _player1 = Player(player1Name, 'X');
+        _player2 = Player(player2Name, 'O');
+
+        _board = Board();
         _createGameArea(player1Name, player2Name);
+        _renderBoard();
+
+        _currentPlayer = [_player1,_player2][Math.floor(Math.random() * 2)];
+        _setCurrentPlayer();
+        _board.setNodes();
+
+        document.getElementById('board').addEventListener('click', _handleBoardClick)
     };
 
-    const _createGameArea = () => {
+    const _createGameArea = (p1Name, p2Name) => {
         const text = `
-          
+          <div class="game-area">
+            <div class="instructions">Instructions</div>
+            <div id="board"></div>
+            <div class="turn-indicator-area">
+              <div class="turn-indicator p1-turn-indicator">${p1Name}</div>
+              <div class="turn-indicator p2-turn-indicator">${p2Name}</div>
+            </div>
+          </div>
+          <div class="restart-button-wrapper">
+            <button id="restart-button">Restart</button>
+          </div>
         `;
         DisplayController.render(text);
+        document.getElementById('restart-button').addEventListener('click', ()=>{
+            _createMainMenu();
+        });
+    };
+
+    const _renderBoard = () => {
+        const text = `
+          <div class="board-row">
+            <div class="board-square" id="s0"></div>
+            <div class="board-square" id="s1"></div>
+            <div class="board-square" id="s2"></div>
+          </div>
+          <div class="board-row">
+            <div class="board-square" id="s3"></div>
+            <div class="board-square" id="s4"></div>
+            <div class="board-square" id="s5"></div>
+          </div>
+          <div class="board-row">
+            <div class="board-square" id="s6"></div>
+            <div class="board-square" id="s7"></div>
+            <div class="board-square" id="s8"></div>
+          </div>
+        `;
+        DisplayController.renderById(text, 'board');
+    };
+
+    const _setCurrentPlayer = () => {
+        DisplayController.renderInstructions(`${_currentPlayer.getName()}, it's your turn!`);
+        const p1Indicator = document.querySelector('.p1-turn-indicator');
+        const p2Indicator = document.querySelector('.p2-turn-indicator');
+
+        if(_currentPlayer.getMark() === 'X') {
+            p1Indicator.classList.add('current-turn-indicator');
+            p2Indicator.classList.remove('current-turn-indicator');
+        } else {
+            p1Indicator.classList.remove('current-turn-indicator');
+            p2Indicator.classList.add('current-turn-indicator');
+        }
+    };
+
+    const _handleBoardClick = (e) => {
+        if(!_playing) return;
+        if(!e.target.classList.contains('board-square')) return;
+        if(e.target.innerText) return;
+
+        const pos = e.target.id[1];
+        const mark = _currentPlayer.getMark();
+
+        _board.setMark(pos, mark);
+        const win = _board.checkWin();
+
+        if(win) {
+            _playing = false;
+            for(const pos of win) {
+                document.getElementById(`s${pos}`).classList.add('winning-square');
+            }
+            DisplayController.renderInstructions(`${_currentPlayer.getName()} wins!`);
+        } else {
+            if(_currentPlayer === _player1) {
+            _currentPlayer = _player2;
+            } else {
+            _currentPlayer = _player1;
+            }
+            _setCurrentPlayer();
+        }
+
+     
     };
 
     _createMainMenu();
