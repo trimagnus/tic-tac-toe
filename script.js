@@ -234,6 +234,7 @@ const Game = (()=>{
                 document.getElementById(`s${pos}`).classList.add('winning-square');
             }
             DisplayController.renderInstructions(`${_currentPlayer.getName()} wins!`);
+            _restartCountdown(3000);
         } else {
             if(_currentPlayer === _player1) {
             _currentPlayer = _player2;
@@ -245,6 +246,10 @@ const Game = (()=>{
 
      
     };
+
+    const _restartCountdown = (ms) => {
+        setTimeout(_createMainMenu, ms);
+    }
 
     _createMainMenu();
 })();
