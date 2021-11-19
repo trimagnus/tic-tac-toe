@@ -176,13 +176,14 @@ const Game = (()=>{
         document.getElementById('board').addEventListener('click', _handleBoardClickSP);
         if(_currentPlayer.getName() === 'Computer') {
             _playing = false;
-            _doAITurn();
+            setTimeout(_doAITurn, 1000);
         }
     };
 
     const _doAITurn = () => {
         const pos = _player2.calculateMove(_board.getBoard());
         _board.setMark(pos, _player2.getMark());
+        _playing = true;
         _processBoardState();
     };
 
