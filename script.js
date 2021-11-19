@@ -13,8 +13,24 @@ const Player = (name, mark) => {
     }
 };
 
-const AI = () => {
-    
+const AI = (mark, mode) => {
+    const {getName, getMark} = Player('Computer', mark);
+    const _mode = mode;
+
+    const calculateMove = (board) => {
+        let choice;
+        do {
+            choice = Math.floor(Math.random() * 9);
+            console.log('Thinking');
+        } while (board[choice]);
+        return choice;
+    };
+
+    return {
+        getName,
+        getMark,
+        calculateMove
+    };
 };
 
 const Board = ()=>{
@@ -53,7 +69,7 @@ const Board = ()=>{
         return false;
     };
 
-    _checkMatch = (arr) => {
+    const _checkMatch = (arr) => {
         if(!_gameboard[arr[0]]) return false;
 
         if(_gameboard[arr[0]] === _gameboard[arr[1]] && _gameboard[arr[1]] === _gameboard[arr[2]]) return true;
@@ -154,10 +170,20 @@ const Game = (()=>{
         _playing = true;
 
         _player1 = Player('Human', 'X');
-        _player2 = Player('Computer', 'O');
+        _player2 = AI('O');
 
         _setBoard();
-        document.getElementById('board').addEventListener('click', _handleBoardClick);
+        document.getElementById('board').addEventListener('click', _handleBoardClickSP);
+        if(_currentPlayer.getName() === 'Computer') {
+            _playing = false;
+            _doAITurn();
+        }
+    };
+
+    const _doAITurn = () => {
+        const pos = _player2.calculateMove(_board.getBoard());
+        _board.setMark(pos, _player2.getMark());
+        _processBoardState();
     };
 
     const _startTwoPlayerGame = (player1Name, player2Name) => {
@@ -235,16 +261,7 @@ const Game = (()=>{
         }
     };
 
-    const _handleBoardClick = (e) => {
-        if(!_playing) return;
-        if(!e.target.classList.contains('board-square')) return;
-        if(e.target.innerText) return;
-
-        const pos = e.target.id[1];
-        const mark = _currentPlayer.getMark();
-
-        _board.setMark(pos, mark);
-
+    const _processBoardState = () => {
         const win = _board.checkWin();
  
         if(!win && _board.checkTie()) {
@@ -268,9 +285,29 @@ const Game = (()=>{
         }
     };
 
+    const _handleBoardClick = (e) => {
+        if(!_playing) return;
+        if(!e.target.classList.contains('board-square')) return;
+        if(e.target.innerText) return;
+
+        const pos = e.target.id[1];
+        const mark = _currentPlayer.getMark();
+
+        _board.setMark(pos, mark);
+
+        _processBoardState();
+    };
+
+    const _handleBoardClickSP = (e) => {
+        if(_playing && _currentPlayer === _player1) {
+            _handleBoardClick(e);
+            if(_playing) setTimeout(_doAITurn, 1000);
+        }
+    };
+
     const _restartCountdown = (ms) => {
         setTimeout(_createMainMenu, ms);
-    }
+    };
 
     _createMainMenu();
 })();
